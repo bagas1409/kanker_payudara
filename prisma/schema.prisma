@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role {
+  DOCTOR
+  PATIENT
+}
+
+model Doctor {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(DOCTOR)
+  createdAt DateTime @default(now())
+
+  patients  Patient[]
+  diagnoses Diagnosis[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id           String   @id @default(uuid())
+  patient_code String
+  name         String
+  age          Int
+  address      String
+  role         Role     @default(PATIENT)
+  doctorId     String
+  createdAt    DateTime @default(now())
+
+  doctor       Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  diagnoses    Diagnosis[]
+
+  @@unique([patient_code, doctorId])
+  @@map("patients")
+}
+
+model Diagnosis {
+  id                            String   @id @default(uuid())
+  diagnosis_code                String
+  patientId                     String?
+  doctorId                      String
+  
+  age_at_diagnosis              Float
+  type_of_breast_surgery        String
+  cancer_type                   String   @default("Breast Cancer")
+  cancer_type_detailed          String
+  cellularity                   String
+  chemotherapy                  String
+  pam50_subtype                 String
+  cohort                        Float
+  er_status_ihc                 String
+  er_status                     String
+  neoplasm_histologic_grade     Float
+  her2_status_snp6              String
+  her2_status                   String
+  tumor_histologic_subtype      String
+  hormone_therapy               String
+  menopausal_state              String
+  integrative_cluster           String
+  tumor_laterality              String
+  lymph_nodes_examined_positive Float
+  mutation_count                Float
+  nottingham_prognostic_index   Float
+  oncotree_code                 String
+  overall_survival_months       Float
+  overall_survival_status       String
+  pr_status                     String
+  radio_therapy                 String
+  relapse_free_status_months    Float
+  sex                           String   @default("Female")
+  gene_classifier_subtype       String
+  tumor_size                    Float
+  tumor_stage                   Float
+  
+  patient_vital_status          String?
+
+  createdAt                     DateTime @default(now())
+
+  patient                       Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor                        Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("diagnoses")
+}
